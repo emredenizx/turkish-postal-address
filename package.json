@@ -21,9 +21,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "batch" : "node dist/batch.js",
+    "batch" : "node ./dist/batch.js",
     "transpile": "babel ./lib --out-dir dist"
   },
+  
   "eslintConfig": {
     "extends": [
       "react-app",
