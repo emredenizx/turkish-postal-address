@@ -57,7 +57,7 @@ const reducer = (state, action) => {
     }
 };
 
-const AddressForm = ({ dispatch }) => {
+const AddressForm = () => {
 
     const { getDistricts, getLocalities, address } = useContext(Address);
 
