@@ -1,12 +1,16 @@
-import React, { createContext, useReducer, useCallback, useEffect } from 'react';
+import React, { createContext, useReducer, useEffect, useCallback } from 'react';
 import { fetchProvinces, fetchDistricts, fetchLocalities } from '../firebase/firebase.js';
 
 const initialState = {
     provinces: [],
     districts: [],
-    localities: []
+    localities: [],
+    isLoading: {
+        provinces: false,
+        districts: false,
+        localities: false
+    }
 };
-
 
 const addressReducer = (state, action) => {
     switch (action.type) {
@@ -14,6 +18,14 @@ const addressReducer = (state, action) => {
             return {
                 ...state,
                 [action.item]: action.payload
+            };
+        case 'setLoading':
+            return {
+                ...state,
+                isLoading: {
+                    ...state.isLoading,
+                    [action.item]: action.payload
+                }
             };
         default:
             return state;
@@ -26,38 +38,38 @@ export const AddressProvider = ({ children }) => {
 
     const [address, dispatch] = useReducer(addressReducer, initialState);
 
-    const setAddressItem = (item, payload) => {
-        const type = 'setAddressItem';
+    const setState = (type, item, payload) => {
         dispatch({
             type: type,
             item: item,
             payload: payload
         });
     }
-
-    const setProvinces = useCallback((provinces) => {
-        setAddressItem('provinces', provinces);      
-    }, []);
+    
+    const fetchData = useCallback(async (item, fetch, ...values) => {
+        setState('setLoading', item, true);
+        const data = await fetch(values);
+        setState('setAddressItem', item, data);
+        setState('setLoading', item, false);
+    }, [])
 
     useEffect(() => {
         (async () => {
-            const provinces = await fetchProvinces();
-            setProvinces(provinces)
+            fetchData('provinces', fetchProvinces)
         })();
-    }, [setProvinces]);
+    }, [fetchData]);
+
 
     const getDistricts = async (province) => {
-        const districts = await fetchDistricts(province);
-        setAddressItem('districts', districts)        
+        fetchData('districts', fetchDistricts, province)
     }
 
     const getLocalities = async (province, district) => {
-        const localities = await fetchLocalities(province, district)
-        setAddressItem('localities', localities)     
+        fetchData('localities', fetchLocalities, province, district)
     }
 
     return (<Address.Provider value={{
-        address,
+        address,       
         getDistricts,
         getLocalities,
     }}>

@@ -1,7 +1,6 @@
 import React, { useContext, useReducer, useState, useEffect } from 'react';
 import { Dropdown, Form } from 'semantic-ui-react'
 import { Address } from '../context/address.context';
-import { formatProvinces, formatDistricts, formatLocalities } from '../utils/utils';
 
 const initialState = {
     province: '',
@@ -9,12 +8,7 @@ const initialState = {
     locality: '',
     neighborhood: '',
     postal: '',
-    street: '',
-    loading : {
-        provinces:false,
-        districts:false,
-        localities:false
-    }
+    street: ''  
 }
 
 const reducer = (state, action) => {
@@ -43,15 +37,7 @@ const reducer = (state, action) => {
             return {
                 ...state,
                 'street': action.value
-            }
-            case 'loading':
-                return {
-                    ...state,
-                    loading : {
-                        ...state.loading,
-                        [action.field] : action.value
-                    }
-                }
+            }      
         default:
             return { ...state };
     }
@@ -61,34 +47,21 @@ const AddressForm = () => {
 
     const { getDistricts, getLocalities, address } = useContext(Address);
 
-    const [formFields, setFormField] = useReducer(reducer, initialState);   
+    const [formFields, setFormField] = useReducer(reducer, initialState);
+    const [options, setOptions] = useState({})
 
-    const [provinces, setProvinceOptions] = useState(address.provinces);
-    const [districts, setDistrictOptions] = useState(address.districts);
-    const [localities, setLocalityOptions] = useState(address.localities);
-    
-    const { province, district, locality, street, neighborhood, postal, loading } = formFields;    
+    const { province, district, locality, street, neighborhood, postal } = formFields;
 
     useEffect(() => {
-        setLoading('provinces',true)
-        const provinces = formatProvinces(address.provinces);
-        setProvinceOptions(provinces);
-        setLoading('provinces',false)
-    }, [address.provinces]);
-
-    useEffect(() => {
-        setLoading('districts',true)
-        const districts = formatDistricts(address.districts);
-        setDistrictOptions(districts);
-        setLoading('districts',false)
-    }, [address.districts]);
-
-    useEffect(() => {
-        setLoading('localities',true)
-        const localities = formatLocalities(address.localities);
-        setLocalityOptions(localities);
-        setLoading('localities',false)
-    }, [address.localities]);
+        (() => {            
+            setOptions(prevState => {
+                return {
+                    ...prevState,
+                    ...address
+                }
+            });
+        })();
+    }, [address])
 
     const onProvinceSelect = (name, province) => {
         setFormField({
@@ -116,20 +89,12 @@ const AddressForm = () => {
         const data = { locality, neighborhood, postal }
         setFormField({ type: 'locality', data, value });
     }
-    
+
     const onStreetChange = (event) => {
         const { value } = event.target;
-        setFormField({ type: 'street', value });        
+        setFormField({ type: 'street', value });
     }
-
-    const setLoading = (field, value) => {
-        setFormField({ 
-            type: 'loading', 
-            field: field,
-            value 
-        });
-    }
-
+  
     const customSearch = (options, value) => {
         const filtered = options.filter(
             function (obj) {
@@ -149,14 +114,14 @@ const AddressForm = () => {
                 <div className='ui form'>
                     <div className='address-form'>
                         <div className='column-container'>
-                            <div className='column-header'>Adres Bilgileri</div>                            
+                            <div className='column-header'>Adres Bilgileri</div>
                             <div className='column'>
                                 <div className='drop-down inline field'>
                                     <div className='inline field'>
                                         <label>İL</label>
                                         <Dropdown
-                                            options={provinces || []}                                            
-                                            loading={loading.provinces}
+                                            options={options.provinces || []}
+                                            loading={address.isLoading.provinces}
                                             placeholder='Lütfen Seçiniz'
                                             clearable
                                             search={customSearch}
@@ -172,9 +137,9 @@ const AddressForm = () => {
                                     <div className='inline field'>
                                         <label>İLÇE</label>
                                         <Dropdown
-                                            options={districts || []}
+                                            options={options.districts || []}
                                             disabled={!province}
-                                            loading={loading.districts}
+                                            loading={address.isLoading.districts}
                                             placeholder='Lütfen Seçiniz'
                                             clearable
                                             search={customSearch}
@@ -190,9 +155,9 @@ const AddressForm = () => {
                                     <div className='inline field'>
                                         <label>MAHALLE</label>
                                         <Dropdown
-                                            options={localities || []}
+                                            options={options.localities || []}
                                             disabled={!district}
-                                            loading={loading.localities}                                            
+                                            loading={address.isLoading.localities}
                                             placeholder='Lütfen Seçiniz'
                                             clearable
                                             search={customSearch}

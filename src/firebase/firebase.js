@@ -1,6 +1,7 @@
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
+import { formatProvinces, formatDistricts, formatLocalities } from '../utils/utils'
 
 const config = {
     apiKey: "<apiKey>",
@@ -32,13 +33,15 @@ export const fetchProvinces = async () => {
                 id: doc.id
             };
         });
-        return provinces;
+      
+        return formatProvinces(provinces);
     } catch (error) {
         console.log(error);
     }
 }
 
-export const fetchDistricts = async (province) => {
+export const fetchDistricts = async (data) => {
+    const [province] = data;
     try {
         const ref = db.collection('address-tr')
             .doc('address')
@@ -52,13 +55,16 @@ export const fetchDistricts = async (province) => {
                 name
             }
         });
-        return districts;
+
+        return formatDistricts(districts);
     } catch (error) {
         console.log(error)
     }
 }
 
-export const fetchLocalities = async (province, district) => {
+export const fetchLocalities = async (data) => {
+    const [province, district] = data; 
+    
     try {
         const ref = db.collection('address-tr')
             .doc('address')
@@ -73,8 +79,8 @@ export const fetchLocalities = async (province, district) => {
         const localities = snapshot.data().list.map(item => ({
             name: item
         }));
-
-        return localities;
+        
+        return formatLocalities(localities);
     } catch (error) {
         console.log(error)
     }
