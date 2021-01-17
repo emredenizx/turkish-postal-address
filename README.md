@@ -11,7 +11,7 @@ If you will use Firebase for the first time,
 
 Install dependencies:
 
-    yarn add   
+    yarn   
     
 
 
